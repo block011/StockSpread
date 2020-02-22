@@ -1,0 +1,14 @@
+# general things to ignore
+data.pickle
+.vscode/
+build/
+dist/
+tests/
+uploadnotes.txt
+.DS_Store
+*.egg-info/
+*.egg
+*.py[cod]
+__pycache__/
+*.so
+*~
