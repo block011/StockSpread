@@ -53,10 +53,67 @@ stocks = ['SPY',
           'PBR'
           ]
 
+class StockOption:
+    def __init__(self, stockDictionary):
+        try:
+            self.askPrice = float(stockDictionary["ask_price"])          #0.12
+            self.bidPrice = float(stockDictionary["bid_price"])
+            self.strikePrice = float(stockDictionary["strike_price"])             #60.00
+            self.profitChance = float(stockDictionary["chance_of_profit_short"])   #0.7823
+            self.type = stockDictionary["type"].upper()                     #call or put
+            self.ticker = stockDictionary["chain_symbol"].upper()           #VSAT
+        except Exception as e:
+            print("failed to create StockOption")
+            print(e)
+            self.type = "FAILED"
+
+    def option_sort(self):
+        return self.strikePrice
+
+    def getBreakEven(self):
+        return (self.strikePrice + self.bidPrice) if self.type == 'CALL' else (self.strikePrice - self.bidPrice)
+        
+    def calculateProfit(self, otherStock):
+        if otherStock.bidPrice == 0:
+            return -10000
+
+        if self.type != otherStock.type or self.type == "FAILED":
+            return -10000
+        
+        if self.type == "CALL":
+            if self.getBreakEven() > otherStock.getBreakEven():
+                return -10000
+
+            maxPremium = (self.bidPrice - otherStock.askPrice) * 100
+            stockDifference = otherStock.strikePrice - self.strikePrice
+
+            maxLoss = -1 * (stockDifference * 100) * (1 - otherStock.profitChance)
+            maxGain = maxPremium * self.profitChance
+            mixed = ((((maxLoss * otherStock.strikePrice)/ (2 * stockDifference)) - 
+                    ((maxLoss * self.strikePrice)/ (2 * stockDifference))) / 
+                    stockDifference)
+
+            if stockDifference * 100 > COLLATORAL_THRESHHOLD:
+                return -10000
+
+            return sum((maxLoss, maxGain, mixed))
+        else:
+            pass
+
+
+
+    def displayStockOption(self):
+        print("----- {} {} STOCK OPTION -----".format(self.ticker, self.type))
+        print("Ask --- {}   | Bid --- {}".format(self.askPrice, self.bidPrice))
+        print("Strike Price --- {}".format(self.strikePrice))
+        print("Probability  --- {}".format(self.profitChance))
+        print("---------------------------------")
+
 def ConnectToRobinhood():
     try:
         user = os.environ["ROBINHOODUSER"]
         pw = os.environ["ROBINHOODPASSWORD"]
+
     except Exception as e:
         print(e)
         print("Failed to recieve system variables.")
