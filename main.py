@@ -1,7 +1,10 @@
 import Robinhood
 import os
+import datetime
+import asyncio 
 
-
+COLLATORAL_THRESHHOLD = 500
+MAX_PROCESSES = int(os.environ.get("NUMBER_OF_PROCESSORS")) - 1
 
 stocks = ['SPY',
           'S',
