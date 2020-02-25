@@ -150,8 +150,25 @@ async def generateBestSpread(listOfTickers):
     return bestDeal
 
 
+async def generateSpread(ticker):
+    date = findEarliestOptionExpiration(ticker)
+    myList = Robinhood.find_options_for_stock_by_expiration(ticker,date,optionType="call")
 
+    myOptions = [StockOption(x) for x in myList]
+    myOptions.sort(key= lambda data : data.option_sort())
 
+    if len(myOptions) >= 2:
+        bestDeal = [-10000, myOptions[0], myOptions[1]]
+    else:
+        return None
+
+    for first in range(len(myOptions) - 1):
+        for second in range(first + 1,len(myOptions)):
+            temp = myOptions[first].calculateProfit(myOptions[second])
+            if temp > bestDeal[0]:
+                bestDeal = [temp, myOptions[first], myOptions[second]]
+    
+    return bestDeal
 
 
 
