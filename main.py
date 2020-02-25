@@ -127,20 +127,28 @@ def ConnectToRobinhood():
     else:
         return True
 
-
-def main():
-    success = ConnectToRobinhood() #sets connection
+async def generateBestSpread(listOfTickers):
+    curTasks = []
+    maxTasks = MAX_PROCESSES
+    bestDeal = [-10000, 0, 0]
     
-    if success is False:
-        print("Failed to connect, aborting")
-        exit()
-
-    data = Robinhood.get_market_options()
-
-    print(data)
-
-
+    for i in range(maxTasks):
+        ticker = listOfTickers.pop()
+        task = asyncio.ensure_future(generateSpread(ticker))
+        curTasks.append(task)
+        if i > len(listOfTickers):
+            break
     
+    for f in asyncio.as_completed(curTasks):
+        t = await f
+        result = t
+        if result[0] > bestDeal[0]:
+            bestDeal = result
+
+
+
+    return bestDeal
+
 
 
 
