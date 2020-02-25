@@ -170,6 +170,28 @@ async def generateSpread(ticker):
     
     return bestDeal
 
+def findEarliestOptionExpiration(ticker):
+    '''
+    returns an option date closest to today
+    '''
+    myList = Robinhood.find_tradable_options_for_stock(ticker, optionType='call', info="expiration_date")
+    myList.sort(key = lambda date : datetime.datetime.strptime(date, "%Y-%m-%d"))
+    if len(myList) != 0:
+        return myList[0]
+    else:
+        return None
+
+
+def main():
+    success = ConnectToRobinhood() #sets connection   
+    if success is False:
+        print("Failed to connect, aborting")
+        exit()
+    myTrade = asyncio.run(generateBestSpread(["SPCE", "VSAT", "PLUG"]))
+    myTrade = myTrade
+    print("profitability of this trade : {}".format(myTrade[0]))
+    myTrade[1].displayStockOption()
+    myTrade[2].displayStockOption()
 
 
 if __name__ == '__main__':
